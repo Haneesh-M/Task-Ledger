@@ -1,0 +1,131 @@
+import { useState, useEffect } from 'react';
+import api from '../api/axiosConfig';
+import { FolderKanban, Plus, Trash2, Loader2 } from 'lucide-react';
+
+export default function Projects() {
+    const [projects, setProjects] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isCreating, setIsCreating] = useState(false);
+    const [newProject, setNewProject] = useState({ name: '', description: '' });
+
+    const fetchProjects = async () => {
+        try {
+            const res = await api.get('/projects');
+            setProjects(res.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    const handleCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await api.post('/projects', newProject);
+            setNewProject({ name: '', description: '' });
+            setIsCreating(false);
+            fetchProjects();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        try {
+            await api.delete(`/projects/${id}`);
+            fetchProjects();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex h-full items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-white">Projects</h1>
+                    <p className="text-slate-400 mt-1">Manage your workspaces and groupings.</p>
+                </div>
+                <button
+                    onClick={() => setIsCreating(!isCreating)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors shadow-lg shadow-blue-500/20"
+                >
+                    <Plus className="w-5 h-5" />
+                    <span>New Project</span>
+                </button>
+            </div>
+
+            {isCreating && (
+                <div className="glass-card p-6 border-l-4 border-l-blue-500 animate-in fade-in slide-in-from-top-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Create New Project</h3>
+                    <form onSubmit={handleCreate} className="space-y-4 max-w-xl">
+                        <div>
+                            <input
+                                type="text"
+                                required
+                                placeholder="Project Name"
+                                value={newProject.name}
+                                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div>
+                            <textarea
+                                placeholder="Description (Optional)"
+                                value={newProject.description}
+                                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                rows={3}
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">
+                                Save Project
+                            </button>
+                            <button type="button" onClick={() => setIsCreating(false)} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projects.map((project) => (
+                    <div key={project.id} className="glass-card p-6 flex flex-col group hover:border-blue-500/50 transition-colors">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                                <FolderKanban className="w-6 h-6" />
+                            </div>
+                            <button onClick={() => handleDelete(project.id)} className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                                <Trash2 className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">{project.name}</h3>
+                        <p className="text-slate-400 flex-1">{project.description || "No description provided."}</p>
+                    </div>
+                ))}
+                {projects.length === 0 && !isCreating && (
+                    <div className="col-span-full text-center py-12 glass-card">
+                        <FolderKanban className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-slate-300">No Projects Found</h3>
+                        <p className="text-slate-500 mt-2">Create your first project to get started.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
