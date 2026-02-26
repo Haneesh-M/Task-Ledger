@@ -9,8 +9,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
@@ -27,11 +30,19 @@ public class ProjectService {
         return projectRepository.save(project);
     }
 
+    @Transactional(readOnly = true)
     public List<Project> getProjectsByUser(Long userId) {
         return projectRepository.findByUserId(userId);
     }
 
-    public void deleteProject(Long id) {
-        projectRepository.deleteById(id);
+    public void deleteProject(Long id, Long userId) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: Project not found."));
+
+        if (!project.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Error: Unauthorized to delete this project.");
+        }
+
+        projectRepository.delete(project);
     }
 }

@@ -64,4 +64,50 @@ public class AuthService {
                 userDetails.getEmail(),
                 userDetails.getAuthorities().iterator().next().getAuthority());
     }
+
+    public String forgotPassword(com.blaze.expense.tracking.dto.request.ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Error: Email not found."));
+
+        String token = java.util.UUID.randomUUID().toString();
+        user.setResetPasswordToken(token);
+        user.setResetPasswordTokenExpiry(LocalDateTime.now().plusHours(1));
+
+        userRepository.save(user);
+
+        // In a real application, we would email this token. 
+        // For testing purposes, we return it in the API response.
+        return "Password reset token generated: " + token;
+    }
+
+    public String resetPassword(com.blaze.expense.tracking.dto.request.ResetPasswordRequest request) {
+        User user = userRepository.findByResetPasswordToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Error: Invalid or expired reset token."));
+
+        if (user.getResetPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Error: Reset token has expired.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenExpiry(null);
+
+        userRepository.save(user);
+
+        return "Password has been successfully reset.";
+    }
+
+    public String changePassword(Long userId, com.blaze.expense.tracking.dto.request.ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Error: User not found."));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Error: Current password is incorrect.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return "Password successfully changed.";
+    }
 }

@@ -274,10 +274,10 @@ export default function Expenses() {
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-200">
                                             {expense.category}
-                                            {expense.task && (
+                                            {expense.taskId && (
                                                 <div className="text-xs text-blue-400 mt-1 flex items-center gap-1">
                                                     <Receipt className="w-3 h-3" />
-                                                    Linked: {expense.task.title}
+                                                    Linked: {expense.taskTitle}
                                                 </div>
                                             )}
                                         </td>

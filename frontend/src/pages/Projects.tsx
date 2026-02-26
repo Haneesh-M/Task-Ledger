@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { FolderKanban, Plus, Trash2, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Projects() {
     const [projects, setProjects] = useState<any[]>([]);
@@ -14,6 +15,7 @@ export default function Projects() {
             setProjects(res.data);
         } catch (err) {
             console.error(err);
+            toast.error("Failed to load projects");
         } finally {
             setLoading(false);
         }
@@ -26,21 +28,25 @@ export default function Projects() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/projects', newProject);
+            const res = await api.post('/projects', newProject);
+            toast.success(res.data.message || "Project created successfully!");
             setNewProject({ name: '', description: '' });
             setIsCreating(false);
             fetchProjects();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+            toast.error(err.response?.data?.message || "Failed to create project");
         }
     };
 
     const handleDelete = async (id: number) => {
         try {
             await api.delete(`/projects/${id}`);
+            toast.success("Project deleted successfully");
             fetchProjects();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+            toast.error(err.response?.data?.message || "Failed to delete project");
         }
     };
 

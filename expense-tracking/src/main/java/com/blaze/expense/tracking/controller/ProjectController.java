@@ -25,26 +25,38 @@ public class ProjectController {
         return userDetails.getId();
     }
 
+    private com.blaze.expense.tracking.dto.response.ProjectResponse mapToProjectResponse(Project project, String message) {
+        return com.blaze.expense.tracking.dto.response.ProjectResponse.builder()
+                .id(project.getId())
+                .name(project.getName())
+                .description(project.getDescription())
+                .userId(project.getUser().getId())
+                .message(message)
+                .build();
+    }
+
     @PostMapping
-    public ResponseEntity<Project> createProject(@Valid @RequestBody ProjectRequest projectRequest) {
+    public ResponseEntity<com.blaze.expense.tracking.dto.response.ProjectResponse> createProject(@Valid @RequestBody ProjectRequest projectRequest) {
         Project project = projectService.createProject(
-                projectRequest.getName(), 
-                projectRequest.getDescription(), 
+                projectRequest.getName(),
+                projectRequest.getDescription(),
                 getCurrentUserId()
         );
-        return ResponseEntity.ok(project);
+        return ResponseEntity.ok(mapToProjectResponse(project, "Project created successfully."));
     }
 
     @GetMapping
-    public ResponseEntity<List<Project>> getAllProjects() {
-        List<Project> projects = projectService.getProjectsByUser(getCurrentUserId());
+    public ResponseEntity<List<com.blaze.expense.tracking.dto.response.ProjectResponse>> getAllProjects() {
+        List<com.blaze.expense.tracking.dto.response.ProjectResponse> projects = projectService.getProjectsByUser(getCurrentUserId())
+                .stream()
+                .map(project -> mapToProjectResponse(project, null))
+                .toList();
         return ResponseEntity.ok(projects);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProject(@PathVariable Long id) {
-        // Basic deletion, assume owner validation happens in a real prod app
-        projectService.deleteProject(id);
+        projectService.deleteProject(id, getCurrentUserId());
         return ResponseEntity.ok().build();
     }
 }

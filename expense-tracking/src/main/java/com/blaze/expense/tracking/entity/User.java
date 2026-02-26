@@ -33,6 +33,9 @@ public class User {
 
     private LocalDateTime createdAt;
     
+    private String resetPasswordToken;
+    private LocalDateTime resetPasswordTokenExpiry;
+    
     // Explicit Getters and Setters to bypass Lombok processing issues on Windows
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -51,4 +54,10 @@ public class User {
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getResetPasswordToken() { return resetPasswordToken; }
+    public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
+
+    public LocalDateTime getResetPasswordTokenExpiry() { return resetPasswordTokenExpiry; }
+    public void setResetPasswordTokenExpiry(LocalDateTime resetPasswordTokenExpiry) { this.resetPasswordTokenExpiry = resetPasswordTokenExpiry; }
 }

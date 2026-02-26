@@ -13,16 +13,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
 
-    public Task createTask(TaskRequest request) {
+    public Task createTask(TaskRequest request, Long userId) {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Error: Project not found."));
+
+        if (!project.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Error: Unauthorized to add tasks to this project.");
+        }
 
         Task task = new Task();
         task.setTitle(request.getTitle());
@@ -40,16 +47,28 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public List<Task> getTasksByProject(Long projectId, TaskStatus status) {
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByProject(Long projectId, TaskStatus status, Long userId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Error: Project not found."));
+
+        if (!project.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Error: Unauthorized to view tasks in this project.");
+        }
+
         if (status != null) {
             return taskRepository.findByProjectIdAndStatus(projectId, status);
         }
         return taskRepository.findByProjectId(projectId);
     }
 
-    public Task updateTask(Long taskId, TaskRequest request) {
+    public Task updateTask(Long taskId, TaskRequest request, Long userId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Error: Task not found."));
+
+        if (!task.getProject().getUser().getId().equals(userId)) {
+            throw new RuntimeException("Error: Unauthorized to modify this task.");
+        }
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
@@ -67,7 +86,14 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public void deleteTask(Long taskId) {
-        taskRepository.deleteById(taskId);
+    public void deleteTask(Long taskId, Long userId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Error: Task not found."));
+
+        if (!task.getProject().getUser().getId().equals(userId)) {
+            throw new RuntimeException("Error: Unauthorized to delete this task.");
+        }
+
+        taskRepository.delete(task);
     }
 }

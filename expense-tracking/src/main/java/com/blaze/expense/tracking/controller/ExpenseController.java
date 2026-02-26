@@ -28,14 +28,32 @@ public class ExpenseController {
         return userDetails.getId();
     }
 
+    private com.blaze.expense.tracking.dto.response.ExpenseResponse mapToExpenseResponse(Expense expense) {
+        return com.blaze.expense.tracking.dto.response.ExpenseResponse.builder()
+                .id(expense.getId())
+                .amount(expense.getAmount())
+                .type(expense.getType())
+                .category(expense.getCategory())
+                .date(expense.getDate())
+                .description(expense.getDescription())
+                .userId(expense.getUser().getId())
+                .taskId(expense.getTask() != null ? expense.getTask().getId() : null)
+                .taskTitle(expense.getTask() != null ? expense.getTask().getTitle() : null)
+                .build();
+    }
+
     @PostMapping
-    public ResponseEntity<Expense> createExpense(@Valid @RequestBody ExpenseRequest expenseRequest) {
-        return ResponseEntity.ok(expenseService.createExpense(expenseRequest, getCurrentUserId()));
+    public ResponseEntity<com.blaze.expense.tracking.dto.response.ExpenseResponse> createExpense(@Valid @RequestBody ExpenseRequest expenseRequest) {
+        return ResponseEntity.ok(mapToExpenseResponse(expenseService.createExpense(expenseRequest, getCurrentUserId())));
     }
 
     @GetMapping
-    public ResponseEntity<List<Expense>> getAllExpenses() {
-        return ResponseEntity.ok(expenseService.getExpensesByUser(getCurrentUserId()));
+    public ResponseEntity<List<com.blaze.expense.tracking.dto.response.ExpenseResponse>> getAllExpenses() {
+        List<com.blaze.expense.tracking.dto.response.ExpenseResponse> expenses = expenseService.getExpensesByUser(getCurrentUserId())
+                .stream()
+                .map(this::mapToExpenseResponse)
+                .toList();
+        return ResponseEntity.ok(expenses);
     }
 
     @GetMapping("/monthly-summary")
@@ -51,8 +69,12 @@ public class ExpenseController {
     }
 
     @GetMapping("/task/{taskId}")
-    public ResponseEntity<List<Expense>> getExpensesByTask(@PathVariable Long taskId) {
-        return ResponseEntity.ok(expenseService.getExpensesByTask(taskId));
+    public ResponseEntity<List<com.blaze.expense.tracking.dto.response.ExpenseResponse>> getExpensesByTask(@PathVariable Long taskId) {
+        List<com.blaze.expense.tracking.dto.response.ExpenseResponse> expenses = expenseService.getExpensesByTask(taskId)
+                .stream()
+                .map(this::mapToExpenseResponse)
+                .toList();
+        return ResponseEntity.ok(expenses);
     }
 
     @GetMapping("/task/{taskId}/total")
@@ -62,7 +84,7 @@ public class ExpenseController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteExpense(@PathVariable Long id) {
-        expenseService.deleteExpense(id);
+        expenseService.deleteExpense(id, getCurrentUserId());
         return ResponseEntity.ok().build();
     }
 }

@@ -1,66 +1,56 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Lock, KeyRound, AlertCircle, ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 
-export default function Login() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+export default function ResetPassword() {
+    const [token, setToken] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [tiltStyle, setTiltStyle] = useState({});
+    const [error, setError] = useState('');
 
-    const { login } = useAuth();
     const navigate = useNavigate();
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-        const x = (e.clientX - left - width / 2) / 25;
-        const y = -(e.clientY - top - height / 2) / 25;
-        setTiltStyle({ transform: `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg) scale3d(1.02, 1.02, 1.02)` });
-    };
-
-    const handleMouseLeave = () => {
-        setTiltStyle({ transform: `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)` });
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const response = await api.post('/auth/login', { email, password });
-            login(response.data);
-            navigate('/dashboard');
+            await api.post('/auth/reset-password', { token, newPassword });
+            toast.success("Password has been reset successfully");
+            navigate('/login');
         } catch (err: any) {
-            setError(err.response?.data?.error || err.response?.data?.message || 'Failed to login. Please check your credentials.');
+            setError(err.response?.data?.message || 'Failed to reset password. Token might be invalid or expired.');
+            toast.error("Failed to reset password");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Dynamic Background Elements */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
+        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-slate-950">
+            <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
 
-            <div
-                className="glass-card w-full max-w-md p-8 relative z-10 transition-transform duration-200 ease-out shadow-blue-500/20 shadow-2xl"
-                style={tiltStyle}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-            >
+            <div className="glass-card w-full max-w-md p-8 relative z-10 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-700/50">
+                <Link to="/login" className="inline-flex items-center text-sm text-slate-400 hover:text-blue-400 mb-6 transition-colors">
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Back to login
+                </Link>
+
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 text-blue-400 mb-4 ring-1 ring-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-                        <LogIn className="w-8 h-8" />
-                    </div>
                     <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        Welcome Back
+                        Reset Password
                     </h2>
-                    <p className="text-slate-400 mt-2">Sign in to your productivity hub</p>
+                    <p className="text-slate-400 mt-2">Enter your reset token and your new password.</p>
                 </div>
 
                 {error && (
@@ -72,29 +62,24 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-1">
-                        <label className="text-sm font-medium text-slate-300 ml-1">Email Address</label>
+                        <label className="text-sm font-medium text-slate-300 ml-1">Reset Token</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Mail className="h-5 w-5 text-slate-500" />
+                                <KeyRound className="h-5 w-5 text-slate-500" />
                             </div>
                             <input
-                                type="email"
+                                type="text"
                                 required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={token}
+                                onChange={(e) => setToken(e.target.value)}
                                 className="block w-full pl-10 px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                placeholder="you@example.com"
+                                placeholder="Paste token here"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-1">
-                        <div className="flex items-center justify-between ml-1">
-                            <label className="text-sm font-medium text-slate-300">Password</label>
-                            <Link to="/forgot-password" className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors">
-                                Forgot password?
-                            </Link>
-                        </div>
+                        <label className="text-sm font-medium text-slate-300 ml-1">New Password</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Lock className="h-5 w-5 text-slate-500" />
@@ -102,8 +87,25 @@ export default function Login() {
                             <input
                                 type="password"
                                 required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="block w-full pl-10 px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                                placeholder="••••••••"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium text-slate-300 ml-1">Confirm New Password</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Lock className="h-5 w-5 text-slate-500" />
+                            </div>
+                            <input
+                                type="password"
+                                required
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 className="block w-full pl-10 px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                                 placeholder="••••••••"
                             />
@@ -112,7 +114,7 @@ export default function Login() {
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !token || !newPassword}
                         className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                         {loading ? (
@@ -120,16 +122,9 @@ export default function Login() {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                        ) : "Sign In"}
+                        ) : "Reset Password"}
                     </button>
                 </form>
-
-                <p className="mt-8 text-center text-sm text-slate-400">
-                    Don't have an account?{' '}
-                    <Link to="/register" className="font-medium text-blue-400 hover:text-blue-300 transition-colors">
-                        Create an account
-                    </Link>
-                </p>
             </div>
         </div>
     );

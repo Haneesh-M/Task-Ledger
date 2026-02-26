@@ -14,8 +14,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
@@ -43,10 +46,12 @@ public class ExpenseService {
         return expenseRepository.save(expense);
     }
 
+    @Transactional(readOnly = true)
     public List<Expense> getExpensesByUser(Long userId) {
         return expenseRepository.findByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
     public MonthlySummaryResponse getMonthlySummary(Long userId, int month, int year) {
         BigDecimal totalIncome = expenseRepository.getMonthlyIncomeSummary(userId, month, year);
         if (totalIncome == null) totalIncome = BigDecimal.ZERO;
@@ -59,16 +64,25 @@ public class ExpenseService {
         return new MonthlySummaryResponse(month, year, totalIncome, totalExpense, balance);
     }
 
+    @Transactional(readOnly = true)
     public List<Expense> getExpensesByTask(Long taskId) {
         return expenseRepository.findByTaskId(taskId);
     }
 
+    @Transactional(readOnly = true)
     public BigDecimal getTotalExpenseForTask(Long taskId) {
         BigDecimal total = expenseRepository.getTotalExpenseByTaskId(taskId);
         return total != null ? total : BigDecimal.ZERO;
     }
 
-    public void deleteExpense(Long id) {
-        expenseRepository.deleteById(id);
+    public void deleteExpense(Long id, Long userId) {
+        Expense expense = expenseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: Expense not found."));
+
+        if (!expense.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Error: Unauthorized to delete this expense.");
+        }
+
+        expenseRepository.delete(expense);
     }
 }
