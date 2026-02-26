@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { CheckSquare, Plus, Trash2, Loader2, DollarSign } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
@@ -16,12 +17,21 @@ export default function Tasks() {
     // Store task expenses
     const [taskExpenses, setTaskExpenses] = useState<{ [key: number]: number }>({});
 
+    // Check for query parameters routed from Projects cards
+    const location = useLocation();
+
     useEffect(() => {
         const fetchInit = async () => {
             try {
+                const queryParams = new URLSearchParams(location.search);
+                const projectedIdFromUrl = queryParams.get('projectId');
+
                 const res = await api.get('/projects');
                 setProjects(res.data);
-                if (res.data.length > 0) {
+
+                if (projectedIdFromUrl && res.data.find((p: any) => p.id.toString() === projectedIdFromUrl)) {
+                    setSelectedProjectId(projectedIdFromUrl);
+                } else if (res.data.length > 0) {
                     setSelectedProjectId(res.data[0].id.toString());
                 }
             } catch (err) {
@@ -92,7 +102,12 @@ export default function Tasks() {
 
     const updateStatus = async (task: any, newStatus: string) => {
         try {
-            await api.put(`/tasks/${task.id}`, { ...task, status: newStatus, projectId: task.project.id });
+            await api.put(`/tasks/${task.id}`, {
+                title: task.title,
+                description: task.description,
+                status: newStatus,
+                projectId: task.project?.id || selectedProjectId
+            });
             setTasks(tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
             toast.success("Status updated");
         } catch (err) {
@@ -221,7 +236,7 @@ export default function Tasks() {
                         </div>
                     ))}
                     {tasks.length === 0 && !isCreating && (
-                        <div className="text-center py-12 glass-card">
+                        <div className="text-center py-12 glass-card animate-in fade-in">
                             <CheckSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                             <h3 className="text-xl font-semibold text-slate-300">No Tasks Yet</h3>
                             <p className="text-slate-500 mt-2">Create a task in this project to see it here.</p>

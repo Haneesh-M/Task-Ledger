@@ -16,5 +16,6 @@ public class UserResponse {
     private String name;
     private String email;
     private String role;
+    private boolean blocked;
     private LocalDateTime createdAt;
 }

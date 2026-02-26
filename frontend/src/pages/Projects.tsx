@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
-import { FolderKanban, Plus, Trash2, Loader2 } from 'lucide-react';
+import { FolderKanban, Plus, Trash2, Loader2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Projects() {
@@ -10,6 +11,7 @@ export default function Projects() {
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [newProject, setNewProject] = useState({ name: '', description: '' });
+    const navigate = useNavigate();
 
     const fetchProjects = async () => {
         try {
@@ -114,23 +116,40 @@ export default function Projects() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
-                    <div key={project.id} className="glass-card p-6 flex flex-col group hover:border-blue-500/50 transition-colors">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                    <div
+                        key={project.id}
+                        onClick={() => navigate(`/tasks?projectId=${project.id}`)}
+                        className="glass-card p-6 flex flex-col group hover:border-blue-500/50 hover:-translate-y-2 transition-all cursor-pointer relative overflow-hidden"
+                    >
+                        {/* Hover Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-colors pointer-events-none" />
+
+                        <div className="flex justify-between items-start mb-4 relative z-10">
+                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
                                 <FolderKanban className="w-6 h-6" />
                             </div>
                             {user?.role === 'ADMIN' && (
-                                <button onClick={() => handleDelete(project.id)} className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(project.id);
+                                    }}
+                                    className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg hover:bg-slate-800"
+                                >
                                     <Trash2 className="w-5 h-5" />
                                 </button>
                             )}
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">{project.name}</h3>
-                        <p className="text-slate-400 flex-1">{project.description || "No description provided."}</p>
+                        <h3 className="text-xl font-bold text-white mb-2 relative z-10">{project.name}</h3>
+                        <p className="text-slate-400 flex-1 relative z-10 limit-lines-2">{project.description || "No description provided."}</p>
+
+                        <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center text-blue-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity relative z-10">
+                            View Tasks <ArrowRight className="w-4 h-4 ml-1" />
+                        </div>
                     </div>
                 ))}
                 {projects.length === 0 && !isCreating && (
-                    <div className="col-span-full text-center py-12 glass-card">
+                    <div className="col-span-full text-center py-12 glass-card animate-in fade-in">
                         <FolderKanban className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                         <h3 className="text-xl font-semibold text-slate-300">No Projects Found</h3>
                         <p className="text-slate-500 mt-2">Create your first project to get started.</p>

@@ -36,6 +36,9 @@ public class User {
     private String resetPasswordToken;
     private LocalDateTime resetPasswordTokenExpiry;
     
+    @Column(nullable = false)
+    private boolean blocked = false;
+    
     // Explicit Getters and Setters to bypass Lombok processing issues on Windows
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -60,4 +63,7 @@ public class User {
 
     public LocalDateTime getResetPasswordTokenExpiry() { return resetPasswordTokenExpiry; }
     public void setResetPasswordTokenExpiry(LocalDateTime resetPasswordTokenExpiry) { this.resetPasswordTokenExpiry = resetPasswordTokenExpiry; }
+
+    public boolean isBlocked() { return blocked; }
+    public void setBlocked(boolean blocked) { this.blocked = blocked; }
 }

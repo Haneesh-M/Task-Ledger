@@ -1,4 +1,4 @@
-# Productivity & Expense Intelligence System (Full Stack)
+# Task Ledger (Productivity & Expense Intelligence System)
 
 A professional full-stack application designed to manage complex tasks, associate expenses with specific projects, and track financial/productivity analytics. This application leverages a modern React-based frontend with Recharts for dynamic data visualization and a robust Spring Boot backend to provide a seamless, highly secure user experience with interview-level architectural principles.
 
@@ -22,9 +22,9 @@ A professional full-stack application designed to manage complex tasks, associat
 This application acts as a central hub for personal or team productivity and financial management. It allows users to create overarching **Projects**, break them down into actionable **Tasks**, and log **Expenses** that can be globally tracked or optionally linked to specific tasks. The system ensures robust data integrity through a strictly layered Spring Boot architecture, JWT-based security, and a beautiful sleek monolithic dashboard providing realtime expense and completion analytics.
 
 **Recent Additions:**
-- **Dynamic 3D Interfaces**: An interactive login page utilizing CSS 3D transforms.
-- **Admin Management**: Dedicated administrative views to check platform usage and registered users.
-- **Robust Password Security**: Forgot password, change password, and reset token flows.
+- **Dynamic 3D Interfaces**: An interactive login page and global layout utilizing CSS 3D floating geometry and glassmorphism.
+- **Top Navigation Menu**: Streamlined layout extracting Profile and Security settings from the sidebar into a modern top-level dropdown.
+- **Admin Management & Security**: Dedicated administrative views, plus robust password security (forgot password, change password, reset tokens).
 
 ---
 

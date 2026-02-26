@@ -5,6 +5,7 @@ import com.blaze.expense.tracking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,8 +17,8 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserRepository userRepository;
-
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<UserResponse> users = userRepository.findAll().stream()
                 .map(user -> UserResponse.builder()
@@ -25,9 +26,22 @@ public class UserController {
                         .name(user.getName())
                         .email(user.getEmail())
                         .role(user.getRole().name())
+                        .blocked(user.isBlocked())
                         .createdAt(user.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(users);
+    }
+    @PutMapping("/{id}/block")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> toggleUserBlock(@PathVariable Long id) {
+        com.blaze.expense.tracking.entity.User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setBlocked(!user.isBlocked());
+        userRepository.save(user);
+        
+        String status = user.isBlocked() ? "blocked" : "unblocked";
+        return ResponseEntity.ok("User successfully " + status);
     }
 }

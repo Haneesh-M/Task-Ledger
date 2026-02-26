@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { Users as UsersIcon, Loader2 } from 'lucide-react';
+import { Users as UsersIcon, Loader2, Ban, Unlock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,8 +23,29 @@ export default function Users() {
             }
         };
 
-        fetchUsers();
+        if (user && user.role === 'ADMIN') {
+            fetchUsers();
+        } else {
+            setLoading(false);
+        }
     }, [user]);
+
+    const handleToggleBlock = async (id: number, currentBlockStatus: boolean) => {
+        try {
+            await api.put(`/users/${id}/block`);
+            setUsersList((prev) =>
+                prev.map((u) => u.id === id ? { ...u, blocked: !currentBlockStatus } : u)
+            );
+            toast.success(`User successfully ${currentBlockStatus ? 'unblocked' : 'blocked'}`);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to update user status");
+        }
+    };
+
+    if (user && user.role !== 'ADMIN') {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     if (loading) {
         return (
@@ -48,7 +70,9 @@ export default function Users() {
                                 <th className="px-6 py-4 text-sm font-semibold text-slate-300">Name</th>
                                 <th className="px-6 py-4 text-sm font-semibold text-slate-300">Email</th>
                                 <th className="px-6 py-4 text-sm font-semibold text-slate-300">Role</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-slate-300">Status</th>
                                 <th className="px-6 py-4 text-sm font-semibold text-slate-300">Joined</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-slate-300 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/50">
@@ -61,14 +85,36 @@ export default function Users() {
                                             {u.role}
                                         </span>
                                     </td>
+                                    <td className="px-6 py-4">
+                                        {u.blocked ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                                                <Ban className="w-3 h-3" /> Blocked
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                <Unlock className="w-3 h-3" /> Active
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className="px-6 py-4 text-sm text-slate-400">
                                         {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        {u.id.toString() !== user?.id && (
+                                            <button
+                                                onClick={() => handleToggleBlock(u.id, u.blocked)}
+                                                className={`p-2 rounded-lg transition-colors ${u.blocked ? 'text-emerald-400 hover:bg-emerald-500/20' : 'text-red-400 hover:bg-red-500/20'}`}
+                                                title={u.blocked ? "Unblock User" : "Block User"}
+                                            >
+                                                {u.blocked ? <Unlock className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
                             {usersList.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                                         <UsersIcon className="w-12 h-12 mx-auto mb-3 opacity-20" />
                                         <p>No users found.</p>
                                     </td>

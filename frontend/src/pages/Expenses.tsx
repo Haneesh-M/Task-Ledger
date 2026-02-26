@@ -380,9 +380,9 @@ export default function Expenses() {
                                 );
                             })}
 
-                            {getFilteredExpenses().length === 0 && (
+                            {getFilteredExpenses().length === 0 && !isCreating && (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 animate-in fade-in">
                                         <Receipt className="w-12 h-12 mx-auto mb-3 opacity-20" />
                                         <p>No financial records found.</p>
                                     </td>

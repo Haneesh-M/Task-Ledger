@@ -1,6 +1,6 @@
-# Project Walkthrough & User Guide
+# Task Ledger - Project Walkthrough & User Guide
 
-Welcome to the **Productivity & Expense Intelligence System**! This guide will walk you through the core features, how to navigate the application, and the mechanics driving the system from a user and technical perspective.
+Welcome to the **Task Ledger**! This guide will walk you through the core features, how to navigate the application, and the mechanics driving the system from a user and technical perspective.
 
 ---
 
@@ -18,9 +18,9 @@ When you boot up the frontend and navigate to `http://localhost:5173/login`, you
 
 ---
 
-## 2. Navigating the ProSystem Dashboard
+## 2. Navigating the Task Ledger Dashboard
 
-Once authenticated, the frontend React Router redirects you to the main layout. The application utilizes a sidebar (left-aligned) for rapid context switching between modules without forcing page reloads (SPA functionality).
+Once authenticated, the frontend React Router redirects you to the main layout. The application utilizes a sidebar (left-aligned) for core modules and a sticky **Top Navigation Bar** for Contextual user actions (Profile & Security) without forcing page reloads (SPA functionality).
 
 ### 📊 The Dashboard Module
 The entry point of the protected route provides high-level analytics.

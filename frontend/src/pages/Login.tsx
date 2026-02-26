@@ -42,13 +42,18 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Dynamic Background Elements */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
+        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-slate-900">
+            {/* 3D Floating Geometry Background */}
+            <div className="absolute top-[10%] left-[10%] w-64 h-64 bg-blue-600/30 rounded-full blur-[80px] animate-float-slow mix-blend-screen pointer-events-none" />
+            <div className="absolute top-[40%] right-[15%] w-80 h-80 bg-purple-600/30 rounded-full blur-[100px] animate-float-fast mix-blend-screen pointer-events-none" />
+            <div className="absolute bottom-[10%] left-[30%] w-72 h-72 bg-emerald-500/20 rounded-full blur-[90px] animate-float-slow mix-blend-screen pointer-events-none" style={{ animationDelay: '2s' }} />
+
+            {/* Polygon shapes for strict 3D feel */}
+            <div className="absolute top-1/4 left-1/4 w-32 h-32 border border-blue-500/20 rounded-xl rotate-45 animate-float-fast pointer-events-none" />
+            <div className="absolute bottom-1/3 right-1/4 w-24 h-24 border-2 border-purple-500/20 rounded-full animate-float-slow pointer-events-none" style={{ animationDelay: '1s' }} />
 
             <div
-                className="glass-card w-full max-w-md p-8 relative z-10 transition-transform duration-200 ease-out shadow-blue-500/20 shadow-2xl"
+                className="glass-card w-full max-w-md p-8 relative z-10 transition-transform duration-200 ease-out shadow-[0_0_50px_rgba(59,130,246,0.15)] border-t border-l border-white/10"
                 style={tiltStyle}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}

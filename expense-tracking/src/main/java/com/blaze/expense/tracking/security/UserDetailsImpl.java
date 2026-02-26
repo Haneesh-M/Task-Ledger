@@ -16,17 +16,19 @@ import java.util.Objects;
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
-    public UserDetailsImpl(Long id, String name, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(Long id, String name, String email, String password, boolean blocked, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
+        this.blocked = blocked;
         this.authorities = authorities;
     }
 
     private Long id;
     private String name;
     private String email;
+    private boolean blocked;
 
     @JsonIgnore
     private String password;
@@ -41,6 +43,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
+                user.isBlocked(),
                 authorities);
     }
 
@@ -66,7 +69,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !blocked;
     }
 
     @Override

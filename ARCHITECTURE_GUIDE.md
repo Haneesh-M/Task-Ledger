@@ -1,4 +1,4 @@
-# Productivity & Expense Tracking System - Complete Architecture Guide
+# Task Ledger - Complete Architecture Guide
 
 This guide gives a clear, file-by-file breakdown of what every component in this full-stack application does. It is designed to be copy-pasteable so you can keep it as internal reference documentation or share it with recruiters/team members.
 
@@ -72,7 +72,7 @@ The frontend is a fast Single Page Application (SPA). It manages routing interna
 *   **`AuthContext.tsx`**: Global State Management. It holds the current `user` object and `token`. Because it wraps the whole app, any component (Navbar, Dashboard, etc.) can instantly know if the user is authenticated.
 
 #### `layouts/`
-*   **`MainLayout.tsx`**: The overarching visual frame. It contains a persistent side-navigation bar and a top header. All dashboard and list pages render *inside* this layout framework.
+*   **`MainLayout.tsx`**: The overarching visual frame. It contains a persistent side-navigation bar for core features and a top header housing user profile and security dropdowns. All dashboard and list pages render *inside* this layout framework.
 
 #### `pages/` (The Views)
 *   **`Login.tsx` & `Register.tsx`**: Uses Tailwind CSS "Glassmorphism" for a visually stunning authentication portal. Post data to `AuthContext`.
