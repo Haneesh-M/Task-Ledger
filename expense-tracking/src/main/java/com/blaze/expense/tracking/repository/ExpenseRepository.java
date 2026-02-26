@@ -18,9 +18,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.task.id = :taskId AND e.type = 'EXPENSE'")
     BigDecimal getTotalExpenseByTaskId(@Param("taskId") Long taskId);
 
-    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.type = 'EXPENSE' AND FUNCTION('MONTH', e.date) = :month AND FUNCTION('YEAR', e.date) = :year")
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.type = 'EXPENSE' AND EXTRACT(MONTH FROM e.date) = :month AND EXTRACT(YEAR FROM e.date) = :year")
     BigDecimal getMonthlyExpenseSummary(@Param("userId") Long userId, @Param("month") int month, @Param("year") int year);
     
-    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.type = 'INCOME' AND FUNCTION('MONTH', e.date) = :month AND FUNCTION('YEAR', e.date) = :year")
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.type = 'INCOME' AND EXTRACT(MONTH FROM e.date) = :month AND EXTRACT(YEAR FROM e.date) = :year")
     BigDecimal getMonthlyIncomeSummary(@Param("userId") Long userId, @Param("month") int month, @Param("year") int year);
 }

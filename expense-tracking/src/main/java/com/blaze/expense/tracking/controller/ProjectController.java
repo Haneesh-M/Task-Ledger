@@ -56,7 +56,13 @@ public class ProjectController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProject(@PathVariable Long id) {
-        projectService.deleteProject(id, getCurrentUserId());
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isAdmin) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                                 .body(new com.blaze.expense.tracking.dto.response.MessageResponse("Error: Only Admins can delete projects."));
+        }
+        projectService.deleteProject(id);
         return ResponseEntity.ok().build();
     }
 }

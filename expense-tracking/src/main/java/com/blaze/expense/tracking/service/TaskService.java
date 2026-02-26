@@ -22,6 +22,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final ActivityLogService activityLogService;
 
     public Task createTask(TaskRequest request, Long userId) {
         Project project = projectRepository.findById(request.getProjectId())
@@ -44,7 +45,9 @@ public class TaskService {
             task.setAssignedUser(assignedUser);
         }
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+        activityLogService.logActivity("Created task: " + savedTask.getTitle(), project.getUser());
+        return savedTask;
     }
 
     @Transactional(readOnly = true)
@@ -83,7 +86,9 @@ public class TaskService {
             task.setAssignedUser(null);
         }
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+        activityLogService.logActivity("Updated task status to " + request.getStatus() + ": " + savedTask.getTitle(), task.getProject().getUser());
+        return savedTask;
     }
 
     public void deleteTask(Long taskId, Long userId) {
@@ -95,5 +100,6 @@ public class TaskService {
         }
 
         taskRepository.delete(task);
+        activityLogService.logActivity("Deleted task: " + task.getTitle(), task.getProject().getUser());
     }
 }

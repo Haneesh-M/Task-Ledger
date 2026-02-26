@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
-import { Receipt, Plus, Trash2, Loader2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Receipt, Plus, Trash2, Loader2, ArrowUpRight, ArrowDownRight, Download } from 'lucide-react';
 import clsx from 'clsx';
+import toast from 'react-hot-toast';
 
 export default function Expenses() {
     const [expenses, setExpenses] = useState<any[]>([]);
@@ -10,6 +11,10 @@ export default function Expenses() {
 
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
+
+    const [filterType, setFilterType] = useState('ALL');
+    const [filterDateFrom, setFilterDateFrom] = useState('');
+    const [filterDateTo, setFilterDateTo] = useState('');
 
     const [newExpense, setNewExpense] = useState({
         amount: '',
@@ -54,7 +59,7 @@ export default function Expenses() {
                 const res = await api.get(`/tasks?projectId=${selectedProjectId}`);
                 setTasks(res.data);
             } catch (err) {
-                console.error(err);
+
             }
         };
         fetchTasks();
@@ -91,18 +96,57 @@ export default function Expenses() {
 
             // Refresh
             fetchData();
+            toast.success("Financial record saved successfully");
         } catch (err) {
             console.error(err);
+            toast.error("Failed to save financial record");
         }
     };
 
     const handleDelete = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this financial record?")) return;
         try {
             await api.delete(`/expenses/${id}`);
             setExpenses(expenses.filter(e => e.id !== id));
+            toast.success("Record deleted successfully");
         } catch (err) {
             console.error(err);
+            toast.error("Failed to delete record");
         }
+    };
+
+    const getFilteredExpenses = () => {
+        return expenses.filter(e => {
+            if (filterType !== 'ALL' && e.type !== filterType) return false;
+            if (filterDateFrom && e.date < filterDateFrom) return false;
+            if (filterDateTo && e.date > filterDateTo) return false;
+            return true;
+        });
+    };
+
+    const exportCSV = () => {
+        const filtered = getFilteredExpenses();
+        const headers = ["ID", "Date", "Type", "Category", "Amount", "Description", "Linked Task"];
+        const rows = filtered.map(e => [
+            e.id,
+            e.date,
+            e.type,
+            `"${(e.category || '').replace(/"/g, '""')}"`,
+            e.amount,
+            `"${(e.description || '').replace(/"/g, '""')}"`,
+            `"${(e.taskTitle || '').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `expenses_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Exported to CSV!");
     };
 
     if (loading) {
@@ -239,6 +283,40 @@ export default function Expenses() {
                 </div>
             )}
 
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-800/20 p-4 rounded-xl border border-slate-700/50">
+                <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-auto"
+                >
+                    <option value="ALL">All Types</option>
+                    <option value="INCOME">Income</option>
+                    <option value="EXPENSE">Expense</option>
+                </select>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <span className="text-slate-400 text-sm">From</span>
+                    <input
+                        type="date"
+                        value={filterDateFrom}
+                        onChange={(e) => setFilterDateFrom(e.target.value)}
+                        className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                    />
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <span className="text-slate-400 text-sm">To</span>
+                    <input
+                        type="date"
+                        value={filterDateTo}
+                        onChange={(e) => setFilterDateTo(e.target.value)}
+                        className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500 flex-1"
+                    />
+                </div>
+                <button onClick={exportCSV} className="md:ml-auto w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl transition-colors">
+                    <Download className="w-4 h-4" /> Export CSV
+                </button>
+            </div>
+
             {/* Ledger Table */}
             <div className="glass-card overflow-hidden">
                 <div className="overflow-x-auto">
@@ -254,7 +332,7 @@ export default function Expenses() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/50">
-                            {expenses.map((expense) => {
+                            {getFilteredExpenses().map((expense) => {
                                 const isIncome = expense.type === 'INCOME';
                                 return (
                                     <tr key={expense.id} className="hover:bg-slate-800/20 transition-colors group">
@@ -302,7 +380,7 @@ export default function Expenses() {
                                 );
                             })}
 
-                            {expenses.length === 0 && (
+                            {getFilteredExpenses().length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                                         <Receipt className="w-12 h-12 mx-auto mb-3 opacity-20" />

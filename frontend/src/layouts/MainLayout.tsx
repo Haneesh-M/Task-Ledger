@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FolderKanban, CheckSquare, Receipt, LogOut, KeyRound, Users } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Receipt, LogOut, KeyRound, Users, User } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function MainLayout() {
@@ -13,6 +13,7 @@ export default function MainLayout() {
         { name: 'Tasks', path: '/tasks', icon: CheckSquare },
         { name: 'Expenses', path: '/expenses', icon: Receipt },
         { name: 'Users', path: '/users', icon: Users },
+        { name: 'Profile', path: '/profile', icon: User },
         { name: 'Security', path: '/change-password', icon: KeyRound },
     ];
 

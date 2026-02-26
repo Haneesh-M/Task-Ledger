@@ -13,6 +13,7 @@ import Projects from './pages/Projects';
 import Tasks from './pages/Tasks';
 import Expenses from './pages/Expenses';
 import Users from './pages/Users';
+import Profile from './pages/Profile';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -36,6 +37,7 @@ function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/change-password" element={<ChangePassword />} />
           </Route>
 

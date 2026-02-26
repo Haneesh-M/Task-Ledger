@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final ActivityLogService activityLogService;
 
     public Project createProject(String name, String description, Long userId) {
         User user = userRepository.findById(userId)
@@ -27,7 +28,9 @@ public class ProjectService {
         project.setDescription(description);
         project.setUser(user);
 
-        return projectRepository.save(project);
+        Project savedProject = projectRepository.save(project);
+        activityLogService.logActivity("Created project: " + savedProject.getName(), user);
+        return savedProject;
     }
 
     @Transactional(readOnly = true)
@@ -35,14 +38,11 @@ public class ProjectService {
         return projectRepository.findByUserId(userId);
     }
 
-    public void deleteProject(Long id, Long userId) {
+    public void deleteProject(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Error: Project not found."));
 
-        if (!project.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Error: Unauthorized to delete this project.");
-        }
-
         projectRepository.delete(project);
+        activityLogService.logActivity("Deleted project: " + project.getName(), project.getUser());
     }
 }

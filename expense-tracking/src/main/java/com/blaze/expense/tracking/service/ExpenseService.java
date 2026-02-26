@@ -24,6 +24,7 @@ public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final ActivityLogService activityLogService;
 
     public Expense createExpense(ExpenseRequest request, Long userId) {
         User user = userRepository.findById(userId)
@@ -43,7 +44,12 @@ public class ExpenseService {
             expense.setTask(task);
         }
 
-        return expenseRepository.save(expense);
+        Expense savedExpense = expenseRepository.save(expense);
+        
+        String logMessage = "Logged " + request.getType().name() + " of $" + request.getAmount() + " for " + request.getCategory();
+        activityLogService.logActivity(logMessage, user);
+
+        return savedExpense;
     }
 
     @Transactional(readOnly = true)
@@ -84,5 +90,7 @@ public class ExpenseService {
         }
 
         expenseRepository.delete(expense);
+        String logMessage = "Deleted " + expense.getType().name() + " of $" + expense.getAmount() + " from " + expense.getCategory();
+        activityLogService.logActivity(logMessage, expense.getUser());
     }
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { CheckSquare, Plus, Trash2, Loader2, DollarSign } from 'lucide-react';
 import clsx from 'clsx';
+import toast from 'react-hot-toast';
 
 export default function Tasks() {
     const [projects, setProjects] = useState<any[]>([]);
@@ -10,6 +11,7 @@ export default function Tasks() {
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [newTask, setNewTask] = useState({ title: '', description: '', status: 'TODO', projectId: '' });
+    const [searchTitle, setSearchTitle] = useState('');
 
     // Store task expenses
     const [taskExpenses, setTaskExpenses] = useState<{ [key: number]: number }>({});
@@ -24,6 +26,7 @@ export default function Tasks() {
                 }
             } catch (err) {
                 console.error(err);
+                toast.error("Failed to connect to API");
             } finally {
                 setLoading(false);
             }
@@ -68,17 +71,22 @@ export default function Tasks() {
             const res = await api.get(`/tasks?projectId=${selectedProjectId}`);
             setTasks(res.data);
             fetchTaskExpenses(res.data);
+            toast.success("Task created successfully");
         } catch (err) {
             console.error(err);
+            toast.error("Failed to create task");
         }
     };
 
     const handleDelete = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this task? All linked expenses will also be removed.")) return;
         try {
             await api.delete(`/tasks/${id}`);
             setTasks(tasks.filter(t => t.id !== id));
+            toast.success("Task deleted successfully");
         } catch (err) {
             console.error(err);
+            toast.error("Failed to delete task");
         }
     };
 
@@ -86,8 +94,10 @@ export default function Tasks() {
         try {
             await api.put(`/tasks/${task.id}`, { ...task, status: newStatus, projectId: task.project.id });
             setTasks(tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+            toast.success("Status updated");
         } catch (err) {
             console.error(err);
+            toast.error("Failed to update status");
         }
     };
 
@@ -113,7 +123,14 @@ export default function Tasks() {
                     <p className="text-slate-400 mt-1">Manage project items and track costs.</p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
+                    <input
+                        type="text"
+                        placeholder="Search tasks..."
+                        value={searchTitle}
+                        onChange={(e) => setSearchTitle(e.target.value)}
+                        className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+                    />
                     <select
                         value={selectedProjectId}
                         onChange={(e) => setSelectedProjectId(e.target.value)}
@@ -169,7 +186,7 @@ export default function Tasks() {
 
             {selectedProjectId ? (
                 <div className="grid grid-cols-1 gap-4">
-                    {tasks.map((task) => (
+                    {tasks.filter(t => t.title.toLowerCase().includes(searchTitle.toLowerCase())).map((task) => (
                         <div key={task.id} className="glass-card p-5 border-l-2 hover:border-blue-500 transition-colors flex flex-col md:flex-row items-center gap-4">
                             <div className="flex-1 min-w-0 w-full">
                                 <div className="flex items-center gap-3 mb-1">

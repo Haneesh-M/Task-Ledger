@@ -21,6 +21,11 @@ A professional full-stack application designed to manage complex tasks, associat
 
 This application acts as a central hub for personal or team productivity and financial management. It allows users to create overarching **Projects**, break them down into actionable **Tasks**, and log **Expenses** that can be globally tracked or optionally linked to specific tasks. The system ensures robust data integrity through a strictly layered Spring Boot architecture, JWT-based security, and a beautiful sleek monolithic dashboard providing realtime expense and completion analytics.
 
+**Recent Additions:**
+- **Dynamic 3D Interfaces**: An interactive login page utilizing CSS 3D transforms.
+- **Admin Management**: Dedicated administrative views to check platform usage and registered users.
+- **Robust Password Security**: Forgot password, change password, and reset token flows.
+
 ---
 
 ## 📂 Project Structure
@@ -29,7 +34,7 @@ This application acts as a central hub for personal or team productivity and fin
 ├── expense-tracking/         # Backend Folder (Spring Boot + Java)
 │   ├── src/main/java/com/blaze/expense/tracking/
 │   │   ├── config/           # Application Configuration (Password Bean, OpenAPI)
-│   │   ├── controller/       # REST API Endpoints (Auth, Project, Task, Expense)
+│   │   ├── controller/       # REST API Endpoints (Auth, Project, Task, Expense, User)
 │   │   ├── dto/              # Data Transfer Objects with Strict Validation
 │   │   ├── entity/           # JPA Entities (User, Project, Task, Expense, Enums)
 │   │   ├── exception/        # Global Error Handling
@@ -47,10 +52,11 @@ This application acts as a central hub for personal or team productivity and fin
 │       ├── components/       # Reusable UI (Protected Routes, Cards)
 │       ├── context/          # React Context (Auth State Management)
 │       ├── layouts/          # Structural Layouts (Sidebar navigation)
-│       ├── pages/            # View Components (Dashboard, Projects, Tasks, Expenses)
+│       ├── pages/            # View Components (Dashboard, Login, Password Flows, Details)
 │       ├── App.tsx           # Global Router
 │       ├── index.css         # Tailwind & Custom Aesthetic Variables
 │       └── main.tsx          # React Entry Point
+├── PROJECT_WALKTHROUGH.md    # Detailed User and Technical Guide
 ├── .gitignore                # Root Git Ignore
 └── README.md                 # Project Documentation
 ```
@@ -61,13 +67,17 @@ This application acts as a central hub for personal or team productivity and fin
 
 ### Frontend Overview
 
-The frontend is a visually stunning, responsive Single Page Application (SPA) built with **React**, **TypeScript**, and **Vite**. It employs modern design aesthetics such as glassmorphism, dark-mode styling, and smooth micro-animations. 
+The frontend is a visually stunning, responsive Single Page Application (SPA) built with **React**, **TypeScript**, and **Vite**. It employs modern design aesthetics such as glassmorphism, dark-mode styling, smooth micro-animations, and 3D pointer tracking.
+
+![Dashboard Screenshot Placeholder](https://via.placeholder.com/800x400?text=Dashboard+Screenshot+Placeholder)
 
 ### Frontend Features
 
+* **3D Animated Auth**: Realtime mouse tracking that manipulates perspective and transforms login cards.
 * **Advanced Dashboard**: Real-time KPI metrics and varied visualizations (Pie Charts, Line Graphs, Bar Charts) via Recharts.
 * **Component Tracking**: Robust Kanban-style list views for Projects and Tasks.
-* **Financial Ledger**: Sleek interface for tracking expenses with optional dropdowns linking expenses to specific tasks.
+* **Financial Ledger**: Sleek interface for tracking expenses with optional dropdowns linking expenses to specific tasks, ensuring proper cross-referencing.
+* **User Overview**: An administrative panel to track and display other authenticated users and their granted roles.
 * **Secured Routing**: Protected routes evaluating JWT context locally to prevent unauthorized access.
 
 ### Frontend Tech Stack
@@ -90,8 +100,8 @@ A RESTful, production-ready backend service. It employs an **Interview-Level Con
 
 ### Backend Features
 
-* **Encapsulated Authentication**: Decoupled AuthService generating Bcrypt hashed credentials and JWT tokens.
-* **Complex Data Mappings**: Tasks belong to Projects; Expenses can belong directly to Users or specifically linked to Tasks for granular cost tracking.
+* **Encapsulated Authentication**: Decoupled AuthService generating Bcrypt hashed credentials and JWT tokens. Handles full lifecycle resets (forgot password/change password).
+* **Granular DTO Mappings**: Custom responses exposing normalized metadata (e.g. `UserResponse` masking passwords, `ExpenseResponse` injecting task titles).
 * **Strict Validation Requirements**: Regex-level DTO validations ensuring minimum password complexity standards directly at the controller layer.
 * **Cross-Origin Security**: Customized CORS definitions handling secure local handshakes.
 
@@ -127,7 +137,7 @@ Ensure your `application.properties` correlates to your local `postgres` usernam
 ```bash
 # From the backend directory
 cd expense-tracking
-./mvnw clean install
+./mvnw clean install -DskipTests
 ```
 
 ### 3. Frontend Installation
@@ -136,6 +146,24 @@ cd expense-tracking
 # From the frontend directory
 cd frontend
 npm install
+```
+
+### 4. Docker Deployment (Backend)
+
+For containerized environments, a `Dockerfile` is included in the backend root.
+
+```bash
+cd expense-tracking
+docker build -t blaze/expense-tracking .
+docker run -p 8080:8080 blaze/expense-tracking
+```
+
+### 5. Frontend Production Build
+
+```bash
+cd frontend
+npm run build
+npm run preview
 ```
 
 ---

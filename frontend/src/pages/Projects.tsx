@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import { FolderKanban, Plus, Trash2, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Projects() {
+    const { user } = useAuth();
     const [projects, setProjects] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
@@ -40,6 +42,7 @@ export default function Projects() {
     };
 
     const handleDelete = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this project? All associated tasks and expenses will be permanently removed.")) return;
         try {
             await api.delete(`/projects/${id}`);
             toast.success("Project deleted successfully");
@@ -116,9 +119,11 @@ export default function Projects() {
                             <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
                                 <FolderKanban className="w-6 h-6" />
                             </div>
-                            <button onClick={() => handleDelete(project.id)} className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
-                                <Trash2 className="w-5 h-5" />
-                            </button>
+                            {user?.role === 'ADMIN' && (
+                                <button onClick={() => handleDelete(project.id)} className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                                    <Trash2 className="w-5 h-5" />
+                                </button>
+                            )}
                         </div>
                         <h3 className="text-xl font-bold text-white mb-2">{project.name}</h3>
                         <p className="text-slate-400 flex-1">{project.description || "No description provided."}</p>
