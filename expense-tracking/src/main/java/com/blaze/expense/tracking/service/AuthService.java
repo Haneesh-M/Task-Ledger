@@ -60,7 +60,7 @@ public class AuthService {
 
         return new JwtResponse(jwt,
                 userDetails.getId(),
-                userDetails.getUsername(),
+                userDetails.getName(),
                 userDetails.getEmail(),
                 userDetails.getAuthorities().iterator().next().getAuthority());
     }

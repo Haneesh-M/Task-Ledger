@@ -44,4 +44,28 @@ public class UserController {
         String status = user.isBlocked() ? "blocked" : "unblocked";
         return ResponseEntity.ok("User successfully " + status);
     }
+
+    @PutMapping("/profile")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<UserResponse> updateProfile(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.blaze.expense.tracking.security.UserDetailsImpl userDetails,
+            @jakarta.validation.Valid @RequestBody com.blaze.expense.tracking.dto.request.UpdateProfileRequest request) {
+
+        com.blaze.expense.tracking.entity.User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setName(request.getName());
+        userRepository.save(user);
+
+        UserResponse response = UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .blocked(user.isBlocked())
+                .createdAt(user.getCreatedAt())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 }

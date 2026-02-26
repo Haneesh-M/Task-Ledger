@@ -2,20 +2,25 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Shield, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../api/axiosConfig';
 
 export default function Profile() {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const [name, setName] = useState(user?.name || '');
     const [isSaving, setIsSaving] = useState(false);
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        // Mocking the update for now until a PUT /api/users/profile endpoint is wired.
-        setTimeout(() => {
-            toast.success("Profile updated successfully! (Mocked)");
+        try {
+            const response = await api.put('/users/profile', { name });
+            updateUser({ name: response.data.name });
+            toast.success("Profile updated successfully!");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Failed to update profile");
+        } finally {
             setIsSaving(false);
-        }, 800);
+        }
     };
 
     return (

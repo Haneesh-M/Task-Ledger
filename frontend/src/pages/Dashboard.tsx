@@ -5,7 +5,12 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell, LineChart, Line
 } from 'recharts';
-import { CheckSquare, Square, TrendingUp, TrendingDown, Loader2, Clock, Activity } from 'lucide-react';
+import { CheckSquare, Square, TrendingUp, TrendingDown, Loader2, Clock, Activity, Calendar } from 'lucide-react';
+
+const formatDateToday = () => {
+    const now = new Date();
+    return now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+};
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -122,62 +127,70 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-3xl font-bold text-white">Welcome back, {user?.name?.split(' ')[0]} 👋</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white">Welcome back, {user?.name?.split(' ')[0]} 👋</h1>
                     <p className="text-slate-400 mt-1">Here is your productivity and financial overview.</p>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/70 border border-slate-700/50 rounded-xl text-slate-400 text-sm shrink-0 self-start sm:self-auto">
+                    <Calendar className="w-4 h-4 text-blue-400" />
+                    <span>{formatDateToday()}</span>
                 </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="glass-card p-6 border-l-4 border-l-blue-500">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="glass-card p-5 border-l-4 border-l-blue-500 hover:shadow-blue-500/10 hover:shadow-xl transition-all duration-300 group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-400">Total Tasks</p>
-                            <h3 className="text-2xl font-bold text-white mt-1">{tasks.length}</h3>
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tasks</p>
+                            <h3 className="text-3xl font-bold text-white mt-1">{tasks.length}</h3>
+                            <p className="text-xs text-slate-500 mt-1">{projects.length} active projects</p>
                         </div>
-                        <div className="p-3 bg-blue-500/10 rounded-lg text-blue-400">
+                        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
                             <Square className="w-6 h-6" />
                         </div>
                     </div>
                 </div>
 
-                <div className="glass-card p-6 border-l-4 border-l-emerald-500">
+                <div className="glass-card p-5 border-l-4 border-l-emerald-500 hover:shadow-emerald-500/10 hover:shadow-xl transition-all duration-300 group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-400">Completed Tasks</p>
-                            <h3 className="text-2xl font-bold text-white mt-1">{completedTasks}</h3>
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Completed</p>
+                            <h3 className="text-3xl font-bold text-white mt-1">{completedTasks}</h3>
+                            <p className="text-xs text-slate-500 mt-1">{tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0}% completion rate</p>
                         </div>
-                        <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-400">
+                        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 group-hover:scale-110 transition-transform">
                             <CheckSquare className="w-6 h-6" />
                         </div>
                     </div>
                 </div>
 
-                <div className="glass-card p-6 border-l-4 border-l-emerald-400">
+                <div className="glass-card p-5 border-l-4 border-l-green-400 hover:shadow-green-500/10 hover:shadow-xl transition-all duration-300 group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-400">Monthly Income</p>
-                            <h3 className="text-2xl font-bold text-white mt-1">
-                                ${summary?.totalIncome || 0}
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Monthly Income</p>
+                            <h3 className="text-3xl font-bold text-white mt-1">
+                                ${(summary?.totalIncome || 0).toLocaleString()}
                             </h3>
+                            <p className="text-xs text-emerald-500 mt-1">↑ Current month</p>
                         </div>
-                        <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-400">
+                        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 group-hover:scale-110 transition-transform">
                             <TrendingUp className="w-6 h-6" />
                         </div>
                     </div>
                 </div>
 
-                <div className="glass-card p-6 border-l-4 border-l-red-500">
+                <div className="glass-card p-5 border-l-4 border-l-red-500 hover:shadow-red-500/10 hover:shadow-xl transition-all duration-300 group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-400">Monthly Expense</p>
-                            <h3 className="text-2xl font-bold text-white mt-1">
-                                ${summary?.totalExpense || 0}
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Monthly Expense</p>
+                            <h3 className="text-3xl font-bold text-white mt-1">
+                                ${(summary?.totalExpense || 0).toLocaleString()}
                             </h3>
+                            <p className="text-xs text-red-400 mt-1">↓ Current month</p>
                         </div>
-                        <div className="p-3 bg-red-500/10 rounded-lg text-red-400">
+                        <div className="p-3 bg-red-500/10 rounded-xl text-red-400 group-hover:scale-110 transition-transform">
                             <TrendingDown className="w-6 h-6" />
                         </div>
                     </div>
