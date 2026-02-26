@@ -36,7 +36,7 @@ public class User {
     private String resetPasswordToken;
     private LocalDateTime resetPasswordTokenExpiry;
     
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean blocked = false;
     
     // Explicit Getters and Setters to bypass Lombok processing issues on Windows
